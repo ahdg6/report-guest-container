@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "name": "pluxel-report-guest",
+  "baseImage": "quay.io/jupyter/scipy-notebook:2026-07-13@sha256:e760028814b48e503f8991e20f89ad7ba2725b34ca7d937b104584b78f11169f",
+  "commands": [
+    "7z",
+    "file",
+    "jq",
+    "pandoc",
+    "pdfinfo",
+    "pdftotext",
+    "rg",
+    "tesseract",
+    "unzip",
+    "zip"
+  ],
+  "pythonModules": ["docx", "fitz", "odf", "openpyxl", "pandas", "PIL", "pptx", "pyxlsb"],
+  "ocrPolicy": "Tesseract is an offline fallback. Its output remains machine-derived and requires source-image review.",
+  "runtimePolicy": {
+    "network": "disabled",
+    "pullPolicy": "never",
+    "packageInstallation": "build-time-only"
+  }
+}

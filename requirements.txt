@@ -1,0 +1,8 @@
+# Exact versions make the tool contract reviewable. The published OCI digest is the deployment
+# lock; updating any version requires rebuilding and passing the real MicroVM smoke test.
+PyMuPDF==1.28.0
+python-docx==1.2.0
+python-pptx==1.0.2
+pyxlsb==1.0.10
+odfpy==1.4.1
+Pillow==12.3.0
