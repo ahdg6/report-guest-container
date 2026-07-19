@@ -30,6 +30,12 @@ Publishing is automatic when an immutable numeric release tag such as `2026.07.0
 commit contained in `main`; the workflow can also be dispatched manually. Existing release tags are
 never moved.
 
+The standard GitHub-hosted amd64 runner exposes KVM, but the GitHub-hosted ARM64 runner does not.
+Releases therefore require a self-hosted Linux ARM64 runner with a working `/dev/kvm` device and the
+labels `self-hosted`, `Linux`, `ARM64`, and `kvm`. The runner also needs passwordless `sudo` for the
+narrow `libcap-ng0` installation and KVM permission step. A missing ARM64 KVM runner blocks release
+promotion; the workflow never substitutes a container-only smoke test for the real MicroVM gate.
+
 ## Local verification
 
 Linux, KVM, `libcap-ng`, Node 24, and pnpm 11 are required:
