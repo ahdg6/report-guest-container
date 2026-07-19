@@ -22,6 +22,10 @@ not included. The complete machine-readable contract is in `guest-capabilities.j
   OIDC and Cosign.
 - Tesseract is an offline fallback. Its output remains unconfirmed machine-derived content.
 
+GitHub requires the package owner to change a newly created container package to public once in its
+package settings. Every release then verifies an anonymous manifest request before MicroVM testing
+or promotion, so later visibility regressions fail closed.
+
 Publishing is automatic when an immutable numeric release tag such as `2026.07.0` is pushed for a
 commit contained in `main`; the workflow can also be dispatched manually. Existing release tags are
 never moved.

@@ -83,12 +83,17 @@ jobs:
           provenance: mode=max
           sbom: true
 
-      - name: Keep the credential-free package public
+      - name: Require anonymous GHCR pull access
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CANDIDATE_TAG: ${{ steps.names.outputs.candidate_tag }}
         run: |
-          gh api --method PATCH /users/ahdg6/packages/container/report-guest-container \
-            --field visibility=public
+          token=$(curl --fail --silent --show-error \
+            "https://ghcr.io/token?service=ghcr.io&scope=repository:ahdg6/report-guest-container:pull" \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["token"])')
+          curl --fail --silent --show-error --head \
+            --header "Authorization: Bearer $token" \
+            --header "Accept: application/vnd.oci.image.index.v1+json" \
+            "https://ghcr.io/v2/ahdg6/report-guest-container/manifests/$CANDIDATE_TAG"
 
   verify:
     name: Verify ${{ matrix.platform }} MicroVM
