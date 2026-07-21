@@ -7,11 +7,6 @@ ARG GUEST_REVISION=unknown
 ARG JJ_VERSION=0.43.0
 ARG JJ_SHA256=59e5588583ac82b623239929368c65b90735931c0f26b5a16c1f04d5bb97643d
 
-LABEL org.opencontainers.image.title="Pluxel Report Guest" \
-  org.opencontainers.image.description="Offline document-analysis guest for the Pluxel Report Agent" \
-  org.opencontainers.image.source="https://github.com/ahdg6/report-guest-container" \
-  org.opencontainers.image.revision="${GUEST_REVISION}"
-
 USER root
 
 RUN apt-get update \
@@ -58,6 +53,11 @@ RUN chmod 0444 /etc/jj/config.toml \
   && python -c "import fitz, docx, pptx, pyxlsb, odf, PIL, openpyxl, pandas" \
   && command -v file jq jj 7z pandoc pdfinfo pdftotext rg tesseract unzip zip >/dev/null \
   && jj --version | grep --fixed-strings "jj ${JJ_VERSION}"
+
+LABEL org.opencontainers.image.title="Pluxel Report Guest" \
+  org.opencontainers.image.description="Offline document-analysis guest for the Pluxel Report Agent" \
+  org.opencontainers.image.source="https://github.com/ahdg6/report-guest-container" \
+  org.opencontainers.image.revision="${GUEST_REVISION}"
 
 USER ${NB_UID}
 WORKDIR /home/jovyan
