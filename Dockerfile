@@ -55,10 +55,14 @@ RUN PIP_ROOT_USER_ACTION=ignore python -m pip install \
     --requirement /tmp/pluxel-guest-requirements.txt \
   && rm /tmp/pluxel-guest-requirements.txt
 
-COPY --chmod=0444 jj-config.toml /etc/jj/config.toml
-COPY --chmod=0444 jj-ignore /home/jovyan/.config/git/ignore
-COPY --chmod=0444 JJ_AGENT_GUIDE.md guest-capabilities.json verify-guest.py /opt/pluxel/
-RUN python -c "import fitz, docx, pptx, pyxlsb, odf, PIL, openpyxl, pandas" \
+COPY jj-config.toml /etc/jj/config.toml
+RUN mkdir -p /home/jovyan/.config/git
+COPY jj-ignore /home/jovyan/.config/git/ignore
+COPY JJ_AGENT_GUIDE.md guest-capabilities.json verify-guest.py /opt/pluxel/
+RUN chmod 0444 /etc/jj/config.toml \
+  && chmod 0444 /home/jovyan/.config/git/ignore \
+  && chmod 0444 /opt/pluxel/JJ_AGENT_GUIDE.md /opt/pluxel/guest-capabilities.json /opt/pluxel/verify-guest.py \
+  && python -c "import fitz, docx, pptx, pyxlsb, odf, PIL, openpyxl, pandas" \
   && command -v file jq jj 7z pandoc pdfinfo pdftotext rg tesseract unzip zip >/dev/null \
   && jj --version | grep --fixed-strings "jj ${JJ_VERSION}"
 
