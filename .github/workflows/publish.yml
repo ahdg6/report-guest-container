@@ -54,9 +54,6 @@ jobs:
         id: names
         run: echo "candidate_tag=candidate-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -73,7 +70,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
           tags: ${{ env.IMAGE }}:${{ steps.names.outputs.candidate_tag }}
           build-args: |
@@ -133,54 +130,11 @@ jobs:
           PLUXEL_GUEST_IMAGE: ${{ env.IMAGE }}:${{ needs.build.outputs.candidate_tag }}@${{ needs.build.outputs.digest }}
         run: pnpm verify
 
-  verify-arm64:
-    name: Verify arm64 MicroVM
-    needs: build
-    runs-on:
-      - self-hosted
-      - Linux
-      - ARM64
-      - kvm
-    permissions:
-      contents: read
-      packages: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Enable KVM access
-        run: |
-          test -c /dev/kvm
-          sudo chmod 0666 /dev/kvm
-
-      - name: Install native runtime dependency
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y libcap-ng0
-
-      - name: Set up Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Verify candidate in a real network-disabled MicroVM
-        env:
-          PLUXEL_GUEST_IMAGE: ${{ env.IMAGE }}:${{ needs.build.outputs.candidate_tag }}@${{ needs.build.outputs.digest }}
-        run: pnpm verify
-
   promote:
     name: Promote verified digest
     needs:
       - build
       - verify-amd64
-      - verify-arm64
     runs-on: ubuntu-24.04
     permissions:
       contents: read

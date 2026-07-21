@@ -4,7 +4,7 @@ Public, credential-free document-analysis guest for the Pluxel Report Agent. The
 a digest-pinned Jupyter SciPy base and is published as:
 
 ```text
-ghcr.io/ahdg6/report-guest-container:<release>@sha256:<multi-architecture-digest>
+ghcr.io/ahdg6/report-guest-container:<release>@sha256:<amd64-digest>
 ```
 
 It adds a narrow tool contract for searching and navigating files, local workspace history with
@@ -27,14 +27,14 @@ Agent host records existing writable files as the clean `Initial workspace` base
 
 ## Trust and release model
 
-- The base image, every consumer reference, and the downloaded multi-architecture `jj` release are
-  pinned by digest or SHA-256.
+- The base image, every consumer reference, and the downloaded amd64 `jj` release are pinned by
+  digest or SHA-256.
 - Runtime MicroVMs use `pullPolicy=never`, restricted security, and disabled networking.
 - The GHCR package is public; the guest contains no provider credentials or private application code.
-- A release candidate is promoted without rebuilding only after real amd64 and arm64 Microsandbox
-  MicroVMs execute the complete file-operation smoke test.
-- The workflow emits SBOM/provenance and signs the verified multi-architecture digest with GitHub
-  OIDC and Cosign.
+- A release candidate is promoted without rebuilding only after a real amd64 Microsandbox MicroVM
+  executes the complete file-operation smoke test.
+- The workflow emits SBOM/provenance and signs the verified amd64 digest with GitHub OIDC and
+  Cosign.
 - Tesseract is an offline fallback. Its output remains unconfirmed machine-derived content.
 
 GitHub requires the package owner to change a newly created container package to public once in its
@@ -45,11 +45,9 @@ Publishing is automatic when an immutable numeric release tag such as `2026.07.0
 commit contained in `main`; the workflow can also be dispatched manually. Existing release tags are
 never moved.
 
-The standard GitHub-hosted amd64 runner exposes KVM, but the GitHub-hosted ARM64 runner does not.
-Releases therefore require a self-hosted Linux ARM64 runner with a working `/dev/kvm` device and the
-labels `self-hosted`, `Linux`, `ARM64`, and `kvm`. The runner also needs passwordless `sudo` for the
-narrow `libcap-ng0` installation and KVM permission step. A missing ARM64 KVM runner blocks release
-promotion; the workflow never substitutes a container-only smoke test for the real MicroVM gate.
+The standard GitHub-hosted amd64 runner exposes KVM. The release workflow uses that real KVM device
+and never substitutes a container-only smoke test for the MicroVM gate. The Guest is intentionally
+published for linux/amd64 only.
 
 ## Local verification
 

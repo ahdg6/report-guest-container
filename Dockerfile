@@ -5,9 +5,7 @@ FROM ${BASE_IMAGE}
 
 ARG GUEST_REVISION=unknown
 ARG JJ_VERSION=0.43.0
-ARG JJ_SHA256_AMD64=59e5588583ac82b623239929368c65b90735931c0f26b5a16c1f04d5bb97643d
-ARG JJ_SHA256_ARM64=289197b6bec60b4e57d47260624b617716f737eb02cdfd9155791b2576aa5862
-ARG TARGETARCH
+ARG JJ_SHA256=59e5588583ac82b623239929368c65b90735931c0f26b5a16c1f04d5bb97643d
 
 LABEL org.opencontainers.image.title="Pluxel Report Guest" \
   org.opencontainers.image.description="Offline document-analysis guest for the Pluxel Report Agent" \
@@ -34,15 +32,10 @@ RUN apt-get update \
     zip \
   && rm -rf /var/lib/apt/lists/*
 
-RUN case "${TARGETARCH}" in \
-      amd64) jj_arch=x86_64; jj_sha256="${JJ_SHA256_AMD64}" ;; \
-      arm64) jj_arch=aarch64; jj_sha256="${JJ_SHA256_ARM64}" ;; \
-      *) echo "Unsupported TARGETARCH for jj: ${TARGETARCH}" >&2; exit 1 ;; \
-    esac \
-  && curl --fail --location --retry 3 \
+RUN curl --fail --location --retry 3 \
     --output /tmp/jj.tar.gz \
-    "https://github.com/jj-vcs/jj/releases/download/v${JJ_VERSION}/jj-v${JJ_VERSION}-${jj_arch}-unknown-linux-musl.tar.gz" \
-  && echo "${jj_sha256}  /tmp/jj.tar.gz" | sha256sum --check - \
+    "https://github.com/jj-vcs/jj/releases/download/v${JJ_VERSION}/jj-v${JJ_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+  && echo "${JJ_SHA256}  /tmp/jj.tar.gz" | sha256sum --check - \
   && tar --extract --gzip --file /tmp/jj.tar.gz --directory /usr/local/bin ./jj \
   && chmod 0755 /usr/local/bin/jj \
   && rm /tmp/jj.tar.gz \
