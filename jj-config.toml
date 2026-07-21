@@ -1,0 +1,10 @@
+[user]
+name = "Pluxel Report Agent"
+email = "report-agent@localhost"
+
+[snapshot]
+auto-track = '~(root:"sources" | root:"evidence" | root:"searches" | root:"templates" | root:"tools" | root:".report-agent" | root-file:".report-agent-state.json" | root-file:".report-agent-messages.json")'
+max-new-file-size = 33554432
+
+[ui]
+pager = ":builtin"

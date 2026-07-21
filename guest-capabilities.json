@@ -6,6 +6,7 @@
     "7z",
     "file",
     "jq",
+    "jj",
     "pandoc",
     "pdfinfo",
     "pdftotext",
@@ -15,6 +16,23 @@
     "zip"
   ],
   "pythonModules": ["docx", "fitz", "odf", "openpyxl", "pandas", "PIL", "pptx", "pyxlsb"],
+  "workspaceVersioning": {
+    "command": "jj",
+    "version": "0.43.0",
+    "backend": "git",
+    "remoteRequired": false,
+    "agentGuide": "/opt/pluxel/JJ_AGENT_GUIDE.md",
+    "supportedCommands": [
+      "status",
+      "diff",
+      "describe",
+      "new",
+      "log",
+      "show",
+      "restore"
+    ],
+    "recommendedInitialization": "jj git init --no-colocate ."
+  },
   "ocrPolicy": "Tesseract is an offline fallback. Its output remains machine-derived and requires source-image review.",
   "runtimePolicy": {
     "network": "disabled",

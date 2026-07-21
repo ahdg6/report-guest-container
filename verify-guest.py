@@ -67,6 +67,65 @@ def verify_navigation() -> None:
     assert "JSON" in run("file", "--brief", "records.json")
 
 
+def verify_workspace_versioning(capabilities: dict[str, object]) -> None:
+    versioning = capabilities["workspaceVersioning"]
+    assert isinstance(versioning, dict)
+    assert versioning["command"] == "jj"
+    assert versioning["version"] == "0.43.0"
+    assert versioning["backend"] == "git"
+    assert versioning["remoteRequired"] is False
+    assert run("jj", "--version").startswith("jj 0.43.0")
+    guide = Path(versioning["agentGuide"]).read_text(encoding="utf-8")
+    assert "jj describe" in guide
+    assert "jj new" in guide
+    assert "不要自行执行 `jj undo`" in guide
+
+    workspace = ROOT / "jj-workspace"
+    protected_directories = ("sources", "evidence", "searches", "templates", "tools")
+    for directory in protected_directories:
+        protected = workspace / directory
+        protected.mkdir(parents=True)
+        (protected / "ignored.md").write_text("read-only projection\n", encoding="utf-8")
+    internal = workspace / ".report-agent"
+    internal.mkdir(parents=True)
+    (internal / "state.json").write_text("{}\n", encoding="utf-8")
+    (workspace / ".report-agent-state.json").write_text("{}\n", encoding="utf-8")
+    (workspace / "existing.md").write_text("# Existing workspace\n", encoding="utf-8")
+    (workspace / "workbook.xlsx").write_bytes(b"PK\x03\x04writable workbook checkpoint")
+    run("jj", "git", "init", "--no-colocate", str(workspace))
+    assert (workspace / ".jj").is_dir()
+    assert not (workspace / ".git").exists()
+    initial_status = run("jj", "-R", str(workspace), "status")
+    assert "existing.md" in initial_status
+    assert "workbook.xlsx" in initial_status
+    for ignored in (*protected_directories, ".report-agent"):
+        assert f"{ignored}/" not in initial_status
+    assert ".report-agent-state.json" not in initial_status
+    tracked = run("jj", "-R", str(workspace), "file", "list")
+    assert "existing.md" in tracked
+    assert "workbook.xlsx" in tracked
+    assert "ignored.md" not in tracked
+    run("jj", "-R", str(workspace), "describe", "-m", "Initial workspace")
+    run("jj", "-R", str(workspace), "new")
+    draft = workspace / "report.md"
+    draft.write_text("# Report\n\nFirst draft.\n", encoding="utf-8")
+    status = run("jj", "-R", str(workspace), "status")
+    assert "report.md" in status
+    assert "sources/source.md" not in status
+    assert "report.md" in run("jj", "-R", str(workspace), "diff", "--stat")
+    run("jj", "-R", str(workspace), "describe", "-m", "first draft")
+    run("jj", "-R", str(workspace), "new")
+    draft.write_text("# Report\n\nRevised draft.\n", encoding="utf-8")
+    assert "Revised draft." in run("jj", "-R", str(workspace), "diff")
+    assert "first draft" in run("jj", "-R", str(workspace), "log", "--no-graph")
+    assert "First draft." in run("jj", "-R", str(workspace), "show", "@-")
+    run("jj", "-R", str(workspace), "describe", "-m", "revised draft")
+    run("jj", "-R", str(workspace), "new")
+    draft.write_text("# Report\n\nAccidental overwrite.\n", encoding="utf-8")
+    run("jj", "-R", str(workspace), "restore", "--from", "@-", "root-file:report.md")
+    assert "Revised draft." in draft.read_text(encoding="utf-8")
+
+
 def verify_pdf() -> None:
     path = ROOT / "sample.pdf"
     document = fitz.open()
@@ -166,6 +225,7 @@ def main() -> None:
     assert_runtime_boundary()
     capabilities = verify_capabilities()
     verify_navigation()
+    verify_workspace_versioning(capabilities)
     verify_pdf()
     verify_word_and_pandoc()
     verify_powerpoint()

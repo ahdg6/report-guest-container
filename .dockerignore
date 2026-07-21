@@ -1,0 +1,4 @@
+.git
+.smoke
+__pycache__
+node_modules

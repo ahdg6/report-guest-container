@@ -1,0 +1,8 @@
+/sources/
+/evidence/
+/searches/
+/templates/
+/tools/
+/.report-agent/
+/.report-agent-state.json
+/.report-agent-messages.json
