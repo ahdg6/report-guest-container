@@ -15,7 +15,7 @@
     "unzip",
     "zip"
   ],
-  "pythonModules": ["docx", "fitz", "odf", "openpyxl", "pandas", "PIL", "pptx", "pyxlsb"],
+  "pythonModules": ["docx", "fitz", "odf", "openpyxl", "pandas", "PIL", "pptx", "pyxlsb", "xlrd"],
   "workspaceVersioning": {
     "command": "jj",
     "version": "0.43.0",

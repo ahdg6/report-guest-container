@@ -11,6 +11,7 @@ import subprocess
 import fitz
 import pandas
 import pyxlsb
+import xlrd
 from docx import Document
 from odf import teletype
 from odf.opendocument import OpenDocumentSpreadsheet, load
@@ -24,6 +25,7 @@ from pptx import Presentation
 ROOT = Path.cwd()
 MARKER = "PLUXEL_GUEST_OK_7319"
 CAPABILITIES_PATH = Path("/opt/pluxel/guest-capabilities.json")
+BIFF8_FIXTURE_PATH = Path("/opt/pluxel/fixtures/sample-biff8.xls")
 
 
 def run(*argv: str) -> str:
@@ -185,6 +187,23 @@ def verify_spreadsheets() -> None:
     frame = pandas.read_excel(xlsx, sheet_name="Checks")
     assert frame.iloc[0]["marker"] == MARKER
 
+    misnamed_ooxml = ROOT / "misnamed-ooxml.xls"
+    shutil.copyfile(xlsx, misnamed_ooxml)
+    assert misnamed_ooxml.read_bytes()[:4] == bytes.fromhex("504b0304")
+    with misnamed_ooxml.open("rb") as stream:
+        reopened_ooxml = load_workbook(stream, read_only=True, data_only=False)
+        assert reopened_ooxml["Checks"]["A2"].value == MARKER
+        reopened_ooxml.close()
+
+    assert BIFF8_FIXTURE_PATH.read_bytes()[:8] == bytes.fromhex("d0cf11e0a1b11ae1")
+    assert "Excel" in run("file", "--brief", str(BIFF8_FIXTURE_PATH))
+    legacy = xlrd.open_workbook(BIFF8_FIXTURE_PATH, on_demand=True)
+    assert legacy.sheet_names() == ["Legacy checks"]
+    legacy_sheet = legacy.sheet_by_name("Legacy checks")
+    assert legacy_sheet.cell_value(1, 0) == MARKER
+    assert legacy_sheet.cell_value(1, 1) == 7319
+    legacy.release_resources()
+
     ods = ROOT / "sample.ods"
     spreadsheet = OpenDocumentSpreadsheet()
     table = Table(name="Checks")
@@ -198,6 +217,7 @@ def verify_spreadsheets() -> None:
     reopened = load(str(ods))
     assert MARKER in teletype.extractText(reopened.spreadsheet)
     assert importlib.metadata.version("pyxlsb") == pyxlsb.__version__
+    assert importlib.metadata.version("xlrd") == xlrd.__version__
 
 
 def verify_image_and_ocr() -> None:

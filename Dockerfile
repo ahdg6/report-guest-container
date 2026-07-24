@@ -43,6 +43,18 @@ RUN PIP_ROOT_USER_ACTION=ignore python -m pip install \
     --requirement /tmp/pluxel-guest-requirements.txt \
   && rm /tmp/pluxel-guest-requirements.txt
 
+# Generate a real OLE/BIFF8 workbook for the offline runtime smoke test without carrying the
+# write-only xlwt package into the final Guest capability surface.
+COPY scripts/generate-biff8-fixture.py /tmp/generate-biff8-fixture.py
+RUN PIP_ROOT_USER_ACTION=ignore python -m pip install \
+    --disable-pip-version-check \
+    --no-cache-dir \
+    "xlwt==1.3.0" \
+  && mkdir -p /opt/pluxel/fixtures \
+  && python /tmp/generate-biff8-fixture.py /opt/pluxel/fixtures/sample-biff8.xls \
+  && PIP_ROOT_USER_ACTION=ignore python -m pip uninstall --yes xlwt \
+  && rm /tmp/generate-biff8-fixture.py
+
 COPY jj-config.toml /etc/jj/config.toml
 RUN mkdir -p /home/jovyan/.config/git
 COPY jj-ignore /home/jovyan/.config/git/ignore
@@ -50,7 +62,7 @@ COPY JJ_AGENT_GUIDE.md guest-capabilities.json verify-guest.py /opt/pluxel/
 RUN chmod 0444 /etc/jj/config.toml \
   && chmod 0444 /home/jovyan/.config/git/ignore \
   && chmod 0444 /opt/pluxel/JJ_AGENT_GUIDE.md /opt/pluxel/guest-capabilities.json /opt/pluxel/verify-guest.py \
-  && python -c "import fitz, docx, pptx, pyxlsb, odf, PIL, openpyxl, pandas" \
+  && python -c "import fitz, docx, pptx, pyxlsb, xlrd, odf, PIL, openpyxl, pandas" \
   && command -v file jq jj 7z pandoc pdfinfo pdftotext rg tesseract unzip zip >/dev/null \
   && jj --version | grep --fixed-strings "jj ${JJ_VERSION}"
 

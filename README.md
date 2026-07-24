@@ -8,7 +8,7 @@ ghcr.io/ahdg6/report-guest-container:<release>@sha256:<amd64-digest>
 ```
 
 It adds a narrow tool contract for searching and navigating files, local workspace history with
-Jujutsu (`jj`), PDF inspection, DOCX/PPTX/XLSX and OpenDocument processing, archives, images, and
+Jujutsu (`jj`), PDF inspection, DOCX/PPTX, modern and legacy Excel, OpenDocument processing, archives, images, and
 offline fallback OCR. LibreOffice is deliberately not included. The complete machine-readable
 contract is in `guest-capabilities.json`.
 
@@ -61,5 +61,8 @@ PLUXEL_GUEST_IMAGE=ghcr.io/ahdg6/report-guest-container:<tag>@sha256:<digest> \
 ```
 
 The command performs the host-side pull once. The actual MicroVM starts with networking disabled and
-`pullPolicy=never`; its smoke test also initializes an offline non-colocated `jj` repository and
-verifies status, diff, describe/new checkpoints, log, show, and restore operations.
+`pullPolicy=never`; its smoke test also initializes an offline non-colocated `jj` repository,
+verifies status, diff, describe/new checkpoints, log, show, and restore operations, and opens a real
+OLE/BIFF8 `.xls` fixture with `xlrd`. Modern OOXML workbooks use `openpyxl`; binary `.xlsb` files use
+`pyxlsb`. The smoke test also opens OOXML content deliberately carrying a wrong `.xls` extension by
+passing a binary stream to `openpyxl`, matching the Agent's content-first format routing.
